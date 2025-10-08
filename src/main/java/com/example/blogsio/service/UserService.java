@@ -3,6 +3,7 @@ package com.example.blogsio.service;
 import com.example.blogsio.entity.UserEntity;
 import com.example.blogsio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,19 +14,25 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public UserEntity createUser(UserEntity user) {
+        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
     }
 
     public UserEntity updateUser(long id, UserEntity user) {
         if (userRepository.existsById(id)) {
-            UserEntity current= userRepository.findById(id).get();
+            UserEntity current = userRepository.findById(id).get();
             current.setEmail(user.getEmail());
             current.setRole(user.getRole());
-            current.setPasswordHash(user.getPasswordHash());
+            if (user.getPasswordHash() != null && !user.getPasswordHash().isEmpty()) {
+                current.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+            }
             return userRepository.save(current);
         }
-        return user;
+        return null;
     }
 
     public boolean deleteUserByID(long id) {

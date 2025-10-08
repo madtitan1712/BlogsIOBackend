@@ -1,10 +1,15 @@
 package com.example.blogsio.controller;
 
+import com.example.blogsio.dto.PostDetailDto;
+import com.example.blogsio.dto.PostDto;
 import com.example.blogsio.entity.PostEntity;
 import com.example.blogsio.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // Add this import
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -14,26 +19,45 @@ public class PostController {
     private PostService myservice;
 
     @GetMapping("/getAll")
-    public List<PostEntity> getallposts() {
+    public List<PostDetailDto> getallposts() {
         return myservice.getAllPosts();
     }
 
-    @GetMapping("/getbyid")
-    public PostEntity getPostbyId(long id) {
+    @GetMapping("/getbyid/{id}")
+    public PostDetailDto getPostbyId(@PathVariable long id) {
         return myservice.getPostById(id);
     }
 
-    @DeleteMapping("/delete")
-    public boolean deletebyID(long id) {
-        return myservice.deletePost(id);
+    @GetMapping("/tag/{tagName}")
+    public List<PostDetailDto> getPostsByTag(@PathVariable String tagName) {
+        return myservice.getPostsByTag(tagName);
+    }
+
+    // Note: The create and update methods can still return the full PostEntity
+    // because the transaction is still open within those methods.
+    // However, it's good practice to also have them return a DTO.
+
+    @PostMapping("/Create")
+    @PreAuthorize("hasAnyRole('AUTHOR', 'ADMIN')")
+    public PostDetailDto create(@RequestBody PostDto postDto, Principal principal) {
+        return myservice.createPost(postDto, principal);
     }
 
     @PutMapping("/update/{id}")
-    public PostEntity update(@PathVariable("id") long id, @RequestBody PostEntity current) {
-        return myservice.updatePost(id, current);
+    @PreAuthorize("hasAnyRole('AUTHOR', 'ADMIN')")
+    public PostDetailDto update(@PathVariable("id") long id, @RequestBody PostDto postDto, Principal principal) {
+        return myservice.updatePost(id, postDto, principal);
     }
-    @PostMapping("/Create")
-    public PostEntity create(@RequestBody PostEntity post){
-        return myservice.createPost(post);
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('AUTHOR', 'ADMIN')")
+    public ResponseEntity<Void> deletebyID(@PathVariable long id, Principal principal) {
+        myservice.deletePost(id, principal);
+        return ResponseEntity.ok().build();
     }
+    @GetMapping("/search")
+    public List<PostDetailDto> searchPosts(@RequestParam String keyword) {
+        return myservice.searchPosts(keyword);
+    }
+
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List; // Add this import
 import java.util.Set;
 
 @Entity
@@ -26,9 +27,16 @@ public class PostEntity {
     private postStatus status;
     @Column(name="time")
     private LocalDateTime createdAt;
+
     @ManyToOne
-    @JoinColumn(name="authorid",nullable = false)
+    @JoinColumn(name="authorid", nullable = false)
     private UserEntity author;
+
+    // --- THIS IS THE NEW CODE TO ADD ---
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentEntity> comments;
+    // ------------------------------------
+
     @ManyToMany
     @JoinTable(
             name = "post_tags",
