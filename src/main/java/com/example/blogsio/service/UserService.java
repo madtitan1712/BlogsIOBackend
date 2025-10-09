@@ -1,14 +1,20 @@
 package com.example.blogsio.service;
 
+import com.example.blogsio.dto.PasswordChangeDto;
 import com.example.blogsio.dto.UserDetailDto;
+import com.example.blogsio.dto.UserProfileDto;
 import com.example.blogsio.entity.UserEntity;
 import com.example.blogsio.enums.userRole;
 import com.example.blogsio.repository.UserRepository;
-import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,5 +89,36 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
         return dto;
+    }
+    @Transactional(readOnly = true)
+    public UserDetailDto getUserProfile(Principal principal) {
+        UserEntity user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return convertEntityToDto(user);
+    }
+
+    @Transactional
+    public UserDetailDto updateUserProfile(Principal principal, UserProfileDto profileDto) {
+        UserEntity user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setName(profileDto.getName());
+        UserEntity updatedUser = userRepository.save(user);
+        return convertEntityToDto(updatedUser);
+    }
+
+    @Transactional
+    public void changePassword(Principal principal, PasswordChangeDto passwordDto) {
+        UserEntity user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // 1. Check if the old password is correct
+        if (!passwordEncoder.matches(passwordDto.getOldPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("Invalid old password");
+        }
+
+        // 2. Encode and set the new password
+        user.setPasswordHash(passwordEncoder.encode(passwordDto.getNewPassword()));
+        userRepository.save(user);
     }
 }
