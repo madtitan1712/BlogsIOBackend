@@ -8,6 +8,7 @@ import com.example.blogsio.entity.CommentEntity;
 import com.example.blogsio.entity.PostEntity;
 import com.example.blogsio.entity.TagEntity;
 import com.example.blogsio.entity.UserEntity;
+import com.example.blogsio.enums.postStatus;
 import com.example.blogsio.enums.userRole;
 import com.example.blogsio.repository.PostRepository;
 import com.example.blogsio.repository.UserRepository;
@@ -93,7 +94,7 @@ public class PostService {
     }
     @Transactional(readOnly = true)
     public List<PostDetailDto> getAllPosts() {
-        return mypostRepository.findAll().stream()
+        return mypostRepository.findByStatus(postStatus.PUBLISHED).stream()
                 .map(this::convertEntityToDto)
                 .collect(Collectors.toList());
     }
@@ -162,5 +163,14 @@ public class PostService {
         commentDto.setUser(userDto);
 
         return commentDto;
+    }
+    @Transactional(readOnly = true)
+    public List<PostDetailDto> getMyPosts(Principal principal) {
+        UserEntity currentUser = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return mypostRepository.findByAuthorId(currentUser.getId()).stream()
+                .map(this::convertEntityToDto)
+                .collect(Collectors.toList());
     }
 }

@@ -2,7 +2,6 @@ package com.example.blogsio.controller;
 
 import com.example.blogsio.dto.PostDetailDto;
 import com.example.blogsio.dto.PostDto;
-import com.example.blogsio.entity.PostEntity;
 import com.example.blogsio.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +57,12 @@ public class PostController {
     @GetMapping("/search")
     public List<PostDetailDto> searchPosts(@RequestParam String keyword) {
         return myservice.searchPosts(keyword);
+    }
+    // --- NEW ENDPOINT FOR AUTHORS ---
+    @GetMapping("/my-posts")
+    @PreAuthorize("hasAnyRole('AUTHOR', 'ADMIN')")
+    public List<PostDetailDto> getMyPosts(Principal principal) {
+        return myservice.getMyPosts(principal);
     }
 
 }
