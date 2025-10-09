@@ -8,6 +8,8 @@ import com.example.blogsio.enums.userRole;
 import com.example.blogsio.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -60,10 +62,8 @@ public class UserService {
     public UserEntity getByID(long id) {
         return userRepository.findById(id).orElse(null);
     }
-    public List<UserDetailDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::convertEntityToDto)
-                .collect(Collectors.toList());
+    public Page<UserDetailDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::convertEntityToDto);
     }
 
     public UserDetailDto updateUserRole(Long userId, userRole role) {

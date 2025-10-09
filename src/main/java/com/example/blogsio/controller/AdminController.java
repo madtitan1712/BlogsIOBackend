@@ -4,6 +4,8 @@ import com.example.blogsio.dto.RoleUpdateDto;
 import com.example.blogsio.dto.UserDetailDto;
 import com.example.blogsio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +21,8 @@ public class AdminController {
     private UserService userService;
 
     @GetMapping("/users")
-    public List<UserDetailDto> getAllUsers() {
-        return userService.getAllUsers();
+    public Page<UserDetailDto> getAllUsers(Pageable pageable) {
+        return userService.getAllUsers(pageable);
     }
 
     @DeleteMapping("/users/{id}")

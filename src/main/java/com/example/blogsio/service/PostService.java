@@ -12,6 +12,8 @@ import com.example.blogsio.enums.postStatus;
 import com.example.blogsio.enums.userRole;
 import com.example.blogsio.repository.PostRepository;
 import com.example.blogsio.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -93,10 +95,8 @@ public class PostService {
         mypostRepository.delete(post);
     }
     @Transactional(readOnly = true)
-    public List<PostDetailDto> getAllPosts() {
-        return mypostRepository.findByStatus(postStatus.PUBLISHED).stream()
-                .map(this::convertEntityToDto)
-                .collect(Collectors.toList());
+    public Page<PostDetailDto> getAllPosts(Pageable pageable) {
+        return mypostRepository.findByStatus(postStatus.PUBLISHED, pageable).map(this::convertEntityToDto);
     }
 
     @Transactional(readOnly = true)
@@ -109,17 +109,15 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDetailDto> getPostsByTag(String tagName) {
-        return mypostRepository.findByTags_Name(tagName).stream()
-                .map(this::convertEntityToDto)
-                .collect(Collectors.toList());
+    public Page<PostDetailDto> getPostsByTag(String tagName, Pageable pageable) {
+        return mypostRepository.findByTags_Name(tagName, pageable).map(this::convertEntityToDto);
     }
 
     @Transactional(readOnly = true)
-    public List<PostDetailDto> searchPosts(String keyword) {
-        return mypostRepository.searchByTitleOrContent(keyword).stream()
-                .map(this::convertEntityToDto)
-                .collect(Collectors.toList());
+    public Page<PostDetailDto> searchPosts(String keyword, Pageable pageable) {
+        // The .map function is now called on the Page object, which is correct.
+        return mypostRepository.searchByTitleOrContent(keyword, pageable)
+                .map(this::convertEntityToDto);
     }
     private PostDetailDto convertEntityToDto(PostEntity post) {
         PostDetailDto postDetailDto = new PostDetailDto();
@@ -165,12 +163,9 @@ public class PostService {
         return commentDto;
     }
     @Transactional(readOnly = true)
-    public List<PostDetailDto> getMyPosts(Principal principal) {
+    public Page<PostDetailDto> getMyPosts(Principal principal, Pageable pageable) {
         UserEntity currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return mypostRepository.findByAuthorId(currentUser.getId()).stream()
-                .map(this::convertEntityToDto)
-                .collect(Collectors.toList());
+        return mypostRepository.findByAuthorId(currentUser.getId(), pageable).map(this::convertEntityToDto);
     }
 }

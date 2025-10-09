@@ -4,6 +4,8 @@ import com.example.blogsio.dto.PostDetailDto;
 import com.example.blogsio.dto.PostDto;
 import com.example.blogsio.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize; // Add this import
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +20,8 @@ public class PostController {
     private PostService myservice;
 
     @GetMapping("/getAll")
-    public List<PostDetailDto> getallposts() {
-        return myservice.getAllPosts();
+    public Page<PostDetailDto> getallposts(Pageable pageable) {
+        return myservice.getAllPosts(pageable);
     }
 
     @GetMapping("/getbyid/{id}")
@@ -28,8 +30,8 @@ public class PostController {
     }
 
     @GetMapping("/tag/{tagName}")
-    public List<PostDetailDto> getPostsByTag(@PathVariable String tagName) {
-        return myservice.getPostsByTag(tagName);
+    public Page<PostDetailDto> getPostsByTag(@PathVariable String tagName, Pageable pageable) {
+        return myservice.getPostsByTag(tagName, pageable);
     }
 
     // Note: The create and update methods can still return the full PostEntity
@@ -55,14 +57,14 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
     @GetMapping("/search")
-    public List<PostDetailDto> searchPosts(@RequestParam String keyword) {
-        return myservice.searchPosts(keyword);
+    public Page<PostDetailDto> searchPosts(@RequestParam String keyword, Pageable pageable) {
+        return myservice.searchPosts(keyword, pageable);
     }
     // --- NEW ENDPOINT FOR AUTHORS ---
     @GetMapping("/my-posts")
     @PreAuthorize("hasAnyRole('AUTHOR', 'ADMIN')")
-    public List<PostDetailDto> getMyPosts(Principal principal) {
-        return myservice.getMyPosts(principal);
+    public Page<PostDetailDto> getMyPosts(Principal principal, Pageable pageable) {
+        return myservice.getMyPosts(principal, pageable);
     }
 
 }
