@@ -1,15 +1,20 @@
 package com.example.blogsio.service;
 
 import com.example.blogsio.dto.PasswordChangeDto;
+import com.example.blogsio.dto.ResetPasswordDto;
 import com.example.blogsio.dto.UserDetailDto;
 import com.example.blogsio.dto.UserProfileDto;
+import com.example.blogsio.entity.PasswordResetToken;
 import com.example.blogsio.entity.UserEntity;
 import com.example.blogsio.enums.userRole;
+import com.example.blogsio.repository.PasswordResetTokenRepository;
 import com.example.blogsio.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -27,6 +34,10 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository; // Inject new repository
+    @Autowired
+    private JavaMailSender mailSender;
 
     public UserEntity createUser(UserEntity user) {
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
@@ -119,5 +130,46 @@ public class UserService {
         // 2. Encode and set the new password
         user.setPasswordHash(passwordEncoder.encode(passwordDto.getNewPassword()));
         userRepository.save(user);
+    }
+    @Transactional
+    public void createPasswordResetTokenForUser(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken myToken = new PasswordResetToken();
+        myToken.setToken(token);
+        myToken.setUser(user);
+        myToken.setExpiryDate(LocalDateTime.now().plusMinutes(15)); // 15 minute expiry
+        tokenRepository.save(myToken);
+
+        // Send the email
+        String recipientAddress = user.getEmail();
+        String subject = "Password Reset Request";
+        String confirmationUrl = "http://localhost:5173/reset-password?token=" + token; // Your frontend URL
+        String message = "Please click the link below to reset your password.\nThis link will expire in 15 minutes.";
+
+        SimpleMailMessage emailMessage = new SimpleMailMessage();
+        emailMessage.setTo(recipientAddress);
+        emailMessage.setSubject(subject);
+        emailMessage.setText(message + "\r\n" + confirmationUrl);
+        mailSender.send(emailMessage);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordDto resetPasswordDto) {
+        PasswordResetToken passToken = tokenRepository.findByToken(resetPasswordDto.getToken())
+                .orElseThrow(() -> new RuntimeException("Invalid password reset token"));
+
+        if (passToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Expired password reset token");
+        }
+
+        UserEntity user = passToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
+        userRepository.save(user);
+
+        // Delete the token so it cannot be used again
+        tokenRepository.delete(passToken);
     }
 }

@@ -2,10 +2,13 @@ package com.example.blogsio.controller;
 
 import com.example.blogsio.dto.AuthenticationRequest;
 import com.example.blogsio.dto.AuthenticationResponse;
+import com.example.blogsio.dto.ForgotPasswordDto;
+import com.example.blogsio.dto.ResetPasswordDto;
 import com.example.blogsio.entity.UserEntity;
 import com.example.blogsio.security.JwtUtil;
 import com.example.blogsio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -52,5 +55,16 @@ public class AuthController {
         final String jwt = jwtUtil.generateToken(userDetails);
 
         return new AuthenticationResponse(jwt);
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto) {
+        userService.createPasswordResetTokenForUser(forgotPasswordDto.getEmail());
+        return ResponseEntity.ok("Password reset link sent to your email.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+        userService.resetPassword(resetPasswordDto);
+        return ResponseEntity.ok("Password has been successfully reset.");
     }
 }

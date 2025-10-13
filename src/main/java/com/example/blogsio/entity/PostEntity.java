@@ -19,7 +19,7 @@ public class PostEntity {
     private Long id;
     @Column(name = "title")
     private String title;
-    @Column(name="content")
+    @Column(name="content",columnDefinition = "LONGTEXT")
     @Lob
     private String content;
     @Column(name="status")
