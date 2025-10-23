@@ -2,9 +2,9 @@ package com.example.blogsio.repository;
 
 import com.example.blogsio.entity.CommentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List; // Add this import
+import org.springframework.data.repository.PagingAndSortingRepository; // Add this import
+import java.util.List;
 
-public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
-    // Add this method to find comments by post ID
+public interface CommentRepository extends JpaRepository<CommentEntity, Long>, PagingAndSortingRepository<CommentEntity, Long> {
     List<CommentEntity> findByPostId(Long postId);
 }

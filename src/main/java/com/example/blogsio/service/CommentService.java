@@ -10,9 +10,13 @@ import com.example.blogsio.repository.CommentRepository;
 import com.example.blogsio.repository.PostRepository;
 import com.example.blogsio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -103,5 +107,9 @@ public class CommentService {
         commentDto.setUser(userDto);
 
         return commentDto;
+    }
+    @Transactional(readOnly = true)
+    public Page<CommentDto> getAllComments(Pageable pageable) {
+        return commentRepository.findAll(pageable).map(this::convertToDto);
     }
 }

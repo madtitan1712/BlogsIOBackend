@@ -4,6 +4,8 @@ import com.example.blogsio.dto.CommentDto;
 import com.example.blogsio.entity.CommentEntity;
 import com.example.blogsio.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,4 +42,5 @@ public class CommentController {
     public CommentDto update(@PathVariable("id") long id, @RequestBody CommentEntity current, Principal principal) {
         return myservice.updateComment(id, current, principal);
     }
+
 }

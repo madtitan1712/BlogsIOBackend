@@ -1,7 +1,9 @@
 package com.example.blogsio.controller;
 
+import com.example.blogsio.dto.CommentDto;
 import com.example.blogsio.dto.RoleUpdateDto;
 import com.example.blogsio.dto.UserDetailDto;
+import com.example.blogsio.service.CommentService;
 import com.example.blogsio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,7 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')") // Secures the entire controller for ADMINs only
 public class AdminController {
-
+    @Autowired
+    private CommentService commentService;
     @Autowired
     private UserService userService;
 
@@ -32,5 +35,9 @@ public class AdminController {
     @PutMapping("/users/{id}/role")
     public UserDetailDto updateUserRole(@PathVariable Long id, @RequestBody RoleUpdateDto roleUpdateDto) {
         return userService.updateUserRole(id, roleUpdateDto.getRole());
+    }
+    @GetMapping("/comments")
+    public Page<CommentDto> getAllComments(Pageable pageable) {
+        return commentService.getAllComments(pageable);
     }
 }
