@@ -62,7 +62,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173","https://staging.d28xuh0029xz4k.amplifyapp.com/"));
+        config.setAllowedOrigins(List.of("http://localhost:5173","https://staging.d28xuh0029xz4k.amplifyapp.com/","https://718qi0kq2h.execute-api.ap-south-1.amazonaws.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
