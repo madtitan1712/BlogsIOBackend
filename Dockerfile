@@ -8,5 +8,5 @@ run mvn clean package -DskipTests
 FROM openjdk:21-jdk-slim
 WORKDIR /app
 copy --from=build /app/target/*.jar app.jar
-expose 8080
+expose 5000
 ENTRYPOINT ["java","-jar","app.jar"]
