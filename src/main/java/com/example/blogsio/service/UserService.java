@@ -146,8 +146,8 @@ public class UserService {
         // Send the email
         String recipientAddress = user.getEmail();
         String subject = "Password Reset Request";
-        String confirmationUrl = "http://localhost:5173/reset-password?token=" + token; // Your frontend URL
-        String message = "Please click the link below to reset your password.\nThis link will expire in 15 minutes.";
+        String confirmationUrl = "https://main.d1zc7i69uhajyw.amplifyapp.com/reset-password?token=" + token; // Your frontend URL
+        String message = "Hi blogger! \n Please click the link below to reset your password.\nThis link will expire in 15 minutes.";
 
         SimpleMailMessage emailMessage = new SimpleMailMessage();
         emailMessage.setTo(recipientAddress);
