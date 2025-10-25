@@ -52,7 +52,7 @@ jobs:
       # This action re-uploads your Dockerrun.aws.json file,
       # which tells Beanstalk to pull the new 'latest' image from Docker Hub.
       - name: Deploy to Elastic Beanstalk
-        uses: einport/beanstalk-deploy@v21
+        uses: heinport/beanstalk-deploy@v21
         with:
           application_name: ${{ secrets.EB_APPLICATION_NAME }}
           environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
